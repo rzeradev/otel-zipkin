@@ -8,6 +8,7 @@ import (
 	"os"
 	"unicode"
 
+	"github.com/gofiber/contrib/otelfiber"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -59,7 +60,9 @@ func initTracer() (*sdktrace.TracerProvider, error) {
 		)),
 	)
 	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{}))
 	return tp, nil
 }
 
@@ -72,7 +75,11 @@ func main() {
 	defer func() { _ = tp.Shutdown(context.Background()) }()
 
 	app.Use(logger.New())
-	// app.Use(otelfiber.Middleware())
+	app.Use(otelfiber.Middleware(
+		otelfiber.WithSpanNameFormatter(func(ctx *fiber.Ctx) string {
+			return ctx.Method() + " " + ctx.Path()
+		}),
+	))
 
 	client := &http.Client{
 		Transport: otelhttp.NewTransport(&CustomTransport{base: http.DefaultTransport}),
@@ -105,16 +112,12 @@ func main() {
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != 200 {
-			return c.Status(resp.StatusCode).SendString("error from orchestrator")
-		}
-
 		var result map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 			return c.Status(500).JSON(fiber.Map{"message": "internal server error"})
 		}
 
-		return c.JSON(result)
+		return c.Status(resp.StatusCode).JSON(result)
 	})
 
 	log.Fatal(app.Listen(":8080"))
