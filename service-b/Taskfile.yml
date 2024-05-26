@@ -1,0 +1,10 @@
+version: '3'
+
+tasks:
+  start:
+    cmds:
+      - air
+
+  test:
+    cmds:
+      - go test -v ./...

@@ -1,0 +1,10 @@
+# .dockerignore
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.air.toml
+Taskfile.yml
+bin
+tmp
+*.md

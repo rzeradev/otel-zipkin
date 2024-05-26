@@ -1,0 +1,14 @@
+root = "."
+tmp_dir = "tmp"
+[build]
+  cmd = "go build -o ./tmp/main ./cmd/server"
+  bin = "tmp/main"
+  full_bin = "tmp/main"
+  include_ext = ["go"]
+  exclude_dir = ["assets", "tmp", "vendor", "test"]
+  exclude_file = ["go.sum"]
+  follow_symlink = true
+  build_delay = 200
+  kill_delay = 500
+  dir = "."
+  log = "air.log"
