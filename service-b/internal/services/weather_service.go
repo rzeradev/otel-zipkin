@@ -38,6 +38,7 @@ func FetchWeather(ctx context.Context, city string, state string) (*models.Weath
 
 	tempC := apiResponse.Current.TempC
 	weather := &models.Weather{
+		City:  city,
 		TempC: tempC,
 		TempF: utils.CelsiusToFahrenheit(tempC),
 		TempK: utils.CelsiusToKelvin(tempC),
